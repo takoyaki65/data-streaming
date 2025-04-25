@@ -13,7 +13,7 @@ fn main() -> Result<(), GenerateMockError> {
     let mut mock_data: Vec<StockData> = Vec::new();
     // generate timestamp
     let mut timestamp = chrono::Utc::now().naive_utc();
-    for i in 0..10_000 {
+    for _ in 0..10_000 {
         // generate stock type
         let stock = match rng.random_range(0..26) {
             0 => model::StockEnum::StockA,
@@ -50,7 +50,7 @@ fn main() -> Result<(), GenerateMockError> {
         }
         rand_array.sort_by(|a, b| a.partial_cmp(b).unwrap());
         // generate timestamp
-        timestamp += chrono::Duration::milliseconds(i * 500);
+        timestamp += chrono::Duration::milliseconds(500);
         // push stock data to vector
         mock_data.push(StockData {
             stock,
@@ -63,7 +63,7 @@ fn main() -> Result<(), GenerateMockError> {
     }
     // create file
     let mut file = File::create("stock_data.txt")?;
-    write!(file, "stock,open,high,low,close,timestamp")?;
+    writeln!(file, "stock,open,high,low,close,timestamp")?;
     mock_data.iter().try_for_each(|stock_data| {
         writeln!(
             file,
