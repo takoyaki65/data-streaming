@@ -16,7 +16,7 @@ https://rs.nkmk.me/rust-array-vec-initialize/
 
 ## 課題2
 
-### 最強サイト
+### 優良サイト
 
 https://www.coins.tsukuba.ac.jp/~syspro/2024/2024-07-17/index.html
 
@@ -41,4 +41,3 @@ https://e-penguiner.com/rust-tcp-ip/#index_id1
 https://udzura.hatenablog.jp/entry/2021/03/25/231833
 
 https://zenn.dev/woden/articles/56a452bebb166a
-
