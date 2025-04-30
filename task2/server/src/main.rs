@@ -34,7 +34,10 @@ fn main() -> Result<(), ServerError> {
                 thread::spawn(move || {
                     println!("Client connected: {:?}", addr);
                     // send stock_data to client
-                    for result in BufReader::new(File::open("stock_data.txt")?).lines() {
+                    for result in BufReader::new(File::open("stock_data.txt")?)
+                        .lines()
+                        .skip(1)
+                    {
                         match result {
                             Ok(record) => match socket.write_all(record.as_bytes()) {
                                 Ok(_) => {
@@ -50,8 +53,8 @@ fn main() -> Result<(), ServerError> {
                                 return Err(ServerError::IoError(e));
                             }
                         }
-                        // sleep for 500 milliseconds
-                        thread::sleep(time::Duration::from_millis(500));
+                        // sleep for 48 milliseconds
+                        thread::sleep(time::Duration::from_millis(48));
                     }
                     // send Over
                     match socket.write_all("Over".as_bytes()) {
