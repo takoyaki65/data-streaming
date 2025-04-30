@@ -27,6 +27,7 @@
           with pkgs;
           mkShell {
             buildInputs = [
+              temurin-bin
               openssl
               pkg-config
               bacon
