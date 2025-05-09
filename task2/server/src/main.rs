@@ -2,6 +2,7 @@ use error::ServerError;
 use std::fs::File;
 use std::io::{BufRead, BufReader, Write};
 use std::net::{IpAddr, Ipv4Addr, Shutdown, SocketAddr, TcpListener};
+use std::sync::{Arc, RwLock};
 use std::{thread, time};
 
 pub mod error;
@@ -19,6 +20,8 @@ pub mod error;
 // 子のサーバに処理を渡して、複数threadで処理を行なう
 
 fn main() -> Result<(), ServerError> {
+    // create shared object
+    let data = Arc::new(RwLock::new(0));
     // port
     let port = 5000;
     // 1.create socket
@@ -30,8 +33,12 @@ fn main() -> Result<(), ServerError> {
         match listener.accept() {
             // connection success!
             Ok((mut socket, addr)) => {
+                // clone hared object
+                let data = Arc::clone(&data);
                 // split into multiple threads
                 thread::spawn(move || {
+                    // lock shared object (read)
+                    let _read = data.read().expect("Failed to acquire read lock");
                     println!("Client connected: {:?}", addr);
                     // send stock_data to client
                     for result in BufReader::new(File::open("stock_data.txt")?)
