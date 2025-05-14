@@ -1,8 +1,6 @@
+use super::window_data::WindowData;
+use crate::utils::{error::ClientError, stock_data::StockEnum};
 use statrs::statistics::Statistics;
-
-use crate::utils::{error::ClientError, model::StockEnum};
-
-use super::model::WindowData;
 use std::collections::{HashMap, VecDeque};
 
 pub fn show_stat(stock_data_buffer: VecDeque<WindowData>) -> Result<(), ClientError> {

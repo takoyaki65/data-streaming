@@ -3,9 +3,9 @@ use std::env;
 use std::io::Read;
 use std::net::{IpAddr, Ipv4Addr, SocketAddr, TcpStream};
 use utils::error::ClientError;
-use utils::model::WindowData;
 use utils::stock_data::create_stock_data;
-use utils::{count_window, stat, time_window};
+use utils::window_data::WindowData;
+use utils::{count_window, time_window};
 
 pub mod utils;
 
@@ -61,162 +61,24 @@ fn main() -> Result<(), ClientError> {
                 if record[0] == "Over" {
                     break;
                 }
-                // generate StockData
-                let stock_data = create_stock_data(record)?;
                 // generate WindowData
-                let window_data = WindowData::new(stock_data.clone());
+                let window_data = WindowData::new(create_stock_data(record)?);
                 // show get record
-                println!("{:?}", stock_data);
+                println!("{:?}", window_data);
                 // ** sliding window process ** //
                 match args_set.types {
-                    utils::args::SlidingWindowEnumType::Count => {
-                        if is_first_flag {
-                            // first window process
-                            if stock_data_buffer.is_empty() {
-                                // start window
-                                println!("------------------------------------------");
-                                println!("Start Window [{}]", chrono::Utc::now());
-                                println!("------------------------------------------");
-                            }
-                            if stock_data_buffer.len() < args_set.get_window_count_value()? as usize
-                            {
-                                // push back WindowData
-                                stock_data_buffer.push_back(window_data);
-                            } else {
-                                is_first_flag = false;
-                            }
-                            if !is_first_flag {
-                                // show result
-                                stat::show_stat(stock_data_buffer.clone())?;
-                                // pop over record
-                                for _ in 0..args_set.get_slide_count_value()? {
-                                    // pop first element
-                                    stock_data_buffer.pop_front();
-                                }
-                            }
-                        } else {
-                            // other window process
-                            if stock_data_buffer.len() < args_set.get_window_count_value()? as usize
-                            {
-                                // push back WindowData
-                                stock_data_buffer.push_back(window_data);
-                            } else {
-                                // show result
-                                stat::show_stat(stock_data_buffer.clone())?;
-                                // pop over record
-                                for _ in 0..args_set.get_slide_count_value()? {
-                                    // pop first element
-                                    stock_data_buffer.pop_front();
-                                }
-                                // start window
-                                println!("------------------------------------------");
-                                println!("Start Window [{}]", chrono::Utc::now());
-                                println!("------------------------------------------");
-                            }
-                        }
-                    }
-                    utils::args::SlidingWindowEnumType::Time => {
-                        // check if the time is over
-                        if is_first_flag {
-                            // first window process
-                            if stock_data_buffer.is_empty() {
-                                // start window
-                                println!("------------------------------------------");
-                                println!("Start Window [{}]", chrono::Utc::now());
-                                println!("------------------------------------------");
-                                stock_data_buffer.push_back(WindowData::new(stock_data));
-                            } else {
-                                // get first element
-                                let first_element = match stock_data_buffer.front() {
-                                    Some(first_element) => first_element.clone(),
-                                    None => {
-                                        eprintln!("Error: first element is not found.");
-                                        return Err(ClientError::PushFailedError);
-                                    }
-                                };
-                                // get time difference
-                                let time_diff =
-                                    window_data.get_timestamp() - first_element.get_timestamp();
-                                // check if the time is over
-                                if time_diff.num_milliseconds()
-                                    < args_set.get_window_time_value()? as i64
-                                {
-                                    // push back WindowData
-                                    stock_data_buffer.push_back(window_data);
-                                } else {
-                                    is_first_flag = false;
-                                }
-                                if !is_first_flag {
-                                    // show result
-                                    stat::show_stat(stock_data_buffer.clone())?;
-                                    // pop over record
-                                    let pop_slide_time = first_element.get_timestamp()
-                                        + chrono::Duration::milliseconds(
-                                            args_set.get_slide_time_value()? as i64,
-                                        );
-                                    let mut index = 0;
-                                    while pop_slide_time - stock_data_buffer[index].get_timestamp()
-                                        > chrono::Duration::zero()
-                                    {
-                                        // pop front element
-                                        stock_data_buffer.pop_front();
-                                        index += 1;
-                                        if index > stock_data_buffer.len() - 1 {
-                                            break;
-                                        }
-                                    }
-                                }
-                            }
-                        } else {
-                            // other window process
-                            // get first element
-                            let first_element = match stock_data_buffer.front() {
-                                Some(first_element) => first_element.clone(),
-                                None => {
-                                    eprintln!("Error: first element is not found.");
-                                    return Err(ClientError::PushFailedError);
-                                }
-                            };
-                            let last_element = match stock_data_buffer.back() {
-                                Some(last_element) => last_element.clone(),
-                                None => {
-                                    eprintln!("Error: last element is not found.");
-                                    return Err(ClientError::PushFailedError);
-                                }
-                            };
-                            if last_element.get_timestamp() - first_element.get_timestamp()
-                                < chrono::Duration::milliseconds(
-                                    args_set.get_window_time_value()? as i64
-                                )
-                            {
-                                // push back WindowData
-                                stock_data_buffer.push_back(window_data);
-                            } else {
-                                // show result
-                                stat::show_stat(stock_data_buffer.clone())?;
-                                // pop over record
-                                let pop_slide_time = first_element.get_timestamp()
-                                    + chrono::Duration::milliseconds(
-                                        args_set.get_slide_time_value()? as i64,
-                                    );
-                                let mut index = 0;
-                                while pop_slide_time - stock_data_buffer[index].get_timestamp()
-                                    > chrono::Duration::zero()
-                                {
-                                    // pop front element
-                                    stock_data_buffer.pop_front();
-                                    index += 1;
-                                    if index > stock_data_buffer.len() - 1 {
-                                        break;
-                                    }
-                                }
-                                // start window
-                                println!("------------------------------------------");
-                                println!("Start Window [{}]", chrono::Utc::now());
-                                println!("------------------------------------------");
-                            }
-                        }
-                    }
+                    utils::args::SlidingWindowEnumType::Count => count_window::count_window(
+                        &mut is_first_flag,
+                        &mut stock_data_buffer,
+                        &args_set,
+                        window_data,
+                    )?,
+                    utils::args::SlidingWindowEnumType::Time => time_window::time_window(
+                        &mut is_first_flag,
+                        &mut stock_data_buffer,
+                        &args_set,
+                        window_data,
+                    )?,
                 }
             }
             Err(e) => {

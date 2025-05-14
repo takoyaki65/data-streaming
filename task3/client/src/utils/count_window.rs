@@ -1,20 +1,58 @@
-use super::{args::ArgsSet, error::ClientError, model::StockData, stock_data};
-use chrono::{DateTime, Utc};
+use super::{
+    args::ArgsSet,
+    error::ClientError,
+    stat::{self},
+    window_data::WindowData,
+};
+use std::collections::VecDeque;
 
 pub fn count_window(
-    args_set: &ArgsSet,
     is_first_flag: &mut bool,
-    stock_data_buffer: &mut Vec<StockData>,
-    record: Vec<String>,
+    stock_data_buffer: &mut VecDeque<WindowData>,
+    args_set: &ArgsSet,
+    window_data: WindowData,
 ) -> Result<(), ClientError> {
-    // create and collect StockData
-    stock_data_buffer.push(stock_data::create_stock_data(record)?);
-    // update is_fisrt_flag (this flag is changed, when the first process of window was finished.)
     if *is_first_flag {
-        // update is_fisrt_flag (this flag is changed, when the first process of window was finished.)
-        *is_first_flag = false;
+        // first window process
+        if stock_data_buffer.is_empty() {
+            // start window
+            println!("------------------------------------------");
+            println!("Start Window [{}]", chrono::Utc::now());
+            println!("------------------------------------------");
+        }
+        if stock_data_buffer.len() < args_set.get_window_count_value()? as usize {
+            // push back WindowData
+            stock_data_buffer.push_back(window_data);
+        } else {
+            *is_first_flag = false;
+        }
+        if !*is_first_flag {
+            // show result
+            stat::show_stat(stock_data_buffer.clone())?;
+            // pop over record
+            for _ in 0..args_set.get_slide_count_value()? {
+                // pop first element
+                stock_data_buffer.pop_front();
+            }
+        }
     } else {
-        // after 1 windows processed.
+        // other window process
+        if stock_data_buffer.len() < args_set.get_window_count_value()? as usize {
+            // push back WindowData
+            stock_data_buffer.push_back(window_data);
+        } else {
+            // show result
+            stat::show_stat(stock_data_buffer.clone())?;
+            // pop over record
+            for _ in 0..args_set.get_slide_count_value()? {
+                // pop first element
+                stock_data_buffer.pop_front();
+            }
+            // start window
+            println!("------------------------------------------");
+            println!("Start Window [{}]", chrono::Utc::now());
+            println!("------------------------------------------");
+        }
     }
     Ok(())
 }
