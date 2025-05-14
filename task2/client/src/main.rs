@@ -139,16 +139,20 @@ fn main() -> Result<(), ClientError> {
                             Some(v) => v,
                             None => return Err(ClientError::MaxValueNotFoundError),
                         };
-                    let min_lows =
-                        match lows.iter().cloned().reduce(|a, b| match a.partial_cmp(&b) {
-                            Some(std::cmp::Ordering::Greater) => b,
-                            Some(std::cmp::Ordering::Equal) => a,
-                            Some(std::cmp::Ordering::Less) => a,
-                            None => b,
-                        }) {
-                            Some(v) => v,
-                            None => return Err(ClientError::MinValueNotFoundError),
-                        };
+                    // let min_lows = lows
+                    //     .iter()
+                    //     .copied()
+                    //     .reduce(f64::min)
+                    //     .ok_or(ClientError::MinValueNotFoundError);
+                    match lows.iter().cloned().reduce(|a, b| match a.partial_cmp(&b) {
+                        Some(std::cmp::Ordering::Greater) => b,
+                        Some(std::cmp::Ordering::Equal) => a,
+                        Some(std::cmp::Ordering::Less) => a,
+                        None => b,
+                    }) {
+                        Some(v) => v,
+                        None => return Err(ClientError::MinValueNotFoundError),
+                    };
                     let max_closes =
                         match closes
                             .iter()
