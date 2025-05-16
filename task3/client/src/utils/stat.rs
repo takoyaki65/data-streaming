@@ -36,17 +36,31 @@ pub fn show_stat(
     // end window
     match args_set.types {
         SlidingWindowEnumType::Count => {
+            let start_window_id = stock_data_buffer
+                .front()
+                .ok_or(ClientError::PushFailedError)?
+                .get_id();
+            let end_window_id = stock_data_buffer
+                .back()
+                .ok_or(ClientError::PushFailedError)?
+                .get_id();
             println!("--------------------------------------");
-            println!("End Window [buffer = {}]", stock_data_buffer.len());
+            println!("End Window [window id: {}]", start_window_id);
+            println!("End Window [window id: {}]", end_window_id);
             println!("--------------------------------------");
         }
         SlidingWindowEnumType::Time => {
+            let start_window_time = stock_data_buffer
+                .front()
+                .ok_or(ClientError::PushFailedError)?
+                .get_timestamp();
             let end_window_time = stock_data_buffer
                 .back()
                 .ok_or(ClientError::PushFailedError)?
                 .get_timestamp();
             println!("--------------------------------------");
-            println!("End Window [{}]", end_window_time);
+            println!("Start Window [timestamp: {}]", start_window_time);
+            println!("End Window [timestamp: {}]", end_window_time);
             println!("--------------------------------------");
         }
     }

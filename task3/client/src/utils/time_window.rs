@@ -16,10 +16,6 @@ pub fn time_window(
     if *is_first_flag {
         // first window process
         if stock_data_buffer.is_empty() {
-            // start window
-            println!("------------------------------------------");
-            println!("Start Window [{}]", chrono::Utc::now());
-            println!("------------------------------------------");
             stock_data_buffer.push_back(window_data);
         } else {
             // get first element
@@ -86,28 +82,13 @@ pub fn time_window(
             // pop over record
             let pop_slide_time = first_element.get_timestamp()
                 + chrono::Duration::milliseconds(args_set.get_slide_time_value()?);
-            let mut index = 0;
-            while pop_slide_time - stock_data_buffer[index].get_timestamp()
-                > chrono::Duration::zero()
-            {
+            while pop_slide_time - stock_data_buffer[0].get_timestamp() > chrono::Duration::zero() {
                 // pop front element
                 stock_data_buffer.pop_front();
-                index += 1;
-                if index > stock_data_buffer.len() - 1 {
+                if stock_data_buffer.is_empty() {
                     break;
                 }
             }
-            // start window
-            let start_time = match stock_data_buffer.front() {
-                Some(first_element) => first_element.clone().get_timestamp(),
-                None => {
-                    eprintln!("Error: first element is not found.");
-                    return Err(ClientError::PushFailedError);
-                }
-            };
-            println!("------------------------------------------");
-            println!("Start Window [{}]", start_time);
-            println!("------------------------------------------");
         }
     }
     Ok(())

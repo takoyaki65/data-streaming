@@ -14,12 +14,6 @@ pub fn count_window(
 ) -> Result<(), ClientError> {
     if *is_first_flag {
         // first window process
-        if stock_data_buffer.is_empty() {
-            // start window
-            println!("------------------------------------------");
-            println!("Start Window [buffer = 0]");
-            println!("------------------------------------------");
-        }
         if stock_data_buffer.len() < args_set.get_window_count_value()? as usize {
             // push back WindowData
             stock_data_buffer.push_back(window_data);
@@ -48,10 +42,6 @@ pub fn count_window(
                 // pop first element
                 stock_data_buffer.pop_front();
             }
-            // start window
-            println!("------------------------------------------");
-            println!("Start Window buffer = {}]", stock_data_buffer.len());
-            println!("------------------------------------------");
         }
     }
     Ok(())

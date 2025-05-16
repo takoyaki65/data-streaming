@@ -40,6 +40,8 @@ fn main() -> Result<(), ClientError> {
         }
     };
 
+    // initialize id
+    let mut id = 0;
     // set is_fisrt_flag
     let mut is_first_flag = true;
     // collect record buffer
@@ -60,7 +62,8 @@ fn main() -> Result<(), ClientError> {
                     break;
                 }
                 // generate WindowData
-                let window_data = WindowData::new(create_stock_data(record)?);
+                let window_data = WindowData::new(create_stock_data(record)?, id);
+                id += 1;
                 // ** sliding window process ** //
                 match args_set.types {
                     utils::args::SlidingWindowEnumType::Count => count_window::count_window(
