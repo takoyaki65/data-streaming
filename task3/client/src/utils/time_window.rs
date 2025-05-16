@@ -41,7 +41,7 @@ pub fn time_window(
             }
             if !*is_first_flag {
                 // show result
-                stat::show_stat(stock_data_buffer.clone())?;
+                stat::show_stat(stock_data_buffer.clone(), args_set.clone())?;
                 // pop over record
                 let pop_slide_time = first_element.get_timestamp()
                     + chrono::Duration::milliseconds(args_set.get_slide_time_value()?);
@@ -82,7 +82,7 @@ pub fn time_window(
             stock_data_buffer.push_back(window_data);
         } else {
             // show result
-            stat::show_stat(stock_data_buffer.clone())?;
+            stat::show_stat(stock_data_buffer.clone(), args_set.clone())?;
             // pop over record
             let pop_slide_time = first_element.get_timestamp()
                 + chrono::Duration::milliseconds(args_set.get_slide_time_value()?);
@@ -98,8 +98,15 @@ pub fn time_window(
                 }
             }
             // start window
+            let start_time = match stock_data_buffer.front() {
+                Some(first_element) => first_element.clone().get_timestamp(),
+                None => {
+                    eprintln!("Error: first element is not found.");
+                    return Err(ClientError::PushFailedError);
+                }
+            };
             println!("------------------------------------------");
-            println!("Start Window [{}]", chrono::Utc::now());
+            println!("Start Window [{}]", start_time);
             println!("------------------------------------------");
         }
     }

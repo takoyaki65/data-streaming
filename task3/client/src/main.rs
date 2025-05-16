@@ -22,10 +22,8 @@ fn main() -> Result<(), ClientError> {
     // format: cargo run -- --(count|window) -- --window 5 -- --slide 2
     // [terms about count]
     // 1. window and slide are both (n > 0) ∧ (n ∈ N).
-    // 1-1. treats as u64
-    // [terms about count]
-    // 1. window and slide are both (numbers with 2 decimal places) ∧ (n ∈ R).
-    // 1-1. treats as f64
+    // [terms about time]
+    // 1. window and slide are both (accuracy: milliseconds) ∧ (n ∈ R).
     // 2. window > slide
     let args_set = utils::args::parse_args(env::args().collect())?;
     println!("Args: {:?}", args_set);
@@ -63,8 +61,6 @@ fn main() -> Result<(), ClientError> {
                 }
                 // generate WindowData
                 let window_data = WindowData::new(create_stock_data(record)?);
-                // show get record
-                println!("{:?}", window_data);
                 // ** sliding window process ** //
                 match args_set.types {
                     utils::args::SlidingWindowEnumType::Count => count_window::count_window(

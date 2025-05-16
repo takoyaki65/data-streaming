@@ -27,7 +27,12 @@
           with pkgs;
           mkShell {
             buildInputs = [
+              # JavaScript
+              nodejs
+              corepack
+              # Java
               temurin-bin
+              # rust
               openssl
               pkg-config
               bacon

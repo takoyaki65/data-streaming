@@ -1,9 +1,15 @@
-use super::window_data::WindowData;
-use crate::utils::{error::ClientError, stock_data::StockEnum};
+use super::{args::ArgsSet, window_data::WindowData};
+use crate::utils::{args::SlidingWindowEnumType, error::ClientError, stock_data::StockEnum};
 use statrs::statistics::Statistics;
 use std::collections::{HashMap, VecDeque};
 
-pub fn show_stat(stock_data_buffer: VecDeque<WindowData>) -> Result<(), ClientError> {
+pub fn show_stat(
+    stock_data_buffer: VecDeque<WindowData>,
+    args_set: ArgsSet,
+) -> Result<(), ClientError> {
+    for stock_data in stock_data_buffer.clone() {
+        println!("{:?}", stock_data);
+    }
     println!("-Total Results----------------------");
     let mut hash_map: HashMap<StockEnum, Vec<f64>> = HashMap::new();
     for v in stock_data_buffer.iter() {
@@ -28,12 +34,21 @@ pub fn show_stat(stock_data_buffer: VecDeque<WindowData>) -> Result<(), ClientEr
     });
     println!("--------------------------------------");
     // end window
-    let end_window_time = stock_data_buffer
-        .back()
-        .ok_or(ClientError::PushFailedError)?
-        .get_timestamp();
-    println!("--------------------------------------");
-    println!("End Window [{}]", end_window_time);
-    println!("--------------------------------------");
+    match args_set.types {
+        SlidingWindowEnumType::Count => {
+            println!("--------------------------------------");
+            println!("End Window [buffer = {}]", stock_data_buffer.len());
+            println!("--------------------------------------");
+        }
+        SlidingWindowEnumType::Time => {
+            let end_window_time = stock_data_buffer
+                .back()
+                .ok_or(ClientError::PushFailedError)?
+                .get_timestamp();
+            println!("--------------------------------------");
+            println!("End Window [{}]", end_window_time);
+            println!("--------------------------------------");
+        }
+    }
     Ok(())
 }

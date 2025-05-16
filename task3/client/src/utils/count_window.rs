@@ -17,7 +17,7 @@ pub fn count_window(
         if stock_data_buffer.is_empty() {
             // start window
             println!("------------------------------------------");
-            println!("Start Window [{}]", chrono::Utc::now());
+            println!("Start Window [buffer = 0]");
             println!("------------------------------------------");
         }
         if stock_data_buffer.len() < args_set.get_window_count_value()? as usize {
@@ -28,7 +28,7 @@ pub fn count_window(
         }
         if !*is_first_flag {
             // show result
-            stat::show_stat(stock_data_buffer.clone())?;
+            stat::show_stat(stock_data_buffer.clone(), args_set.clone())?;
             // pop over record
             for _ in 0..args_set.get_slide_count_value()? {
                 // pop first element
@@ -42,7 +42,7 @@ pub fn count_window(
             stock_data_buffer.push_back(window_data);
         } else {
             // show result
-            stat::show_stat(stock_data_buffer.clone())?;
+            stat::show_stat(stock_data_buffer.clone(), args_set.clone())?;
             // pop over record
             for _ in 0..args_set.get_slide_count_value()? {
                 // pop first element
@@ -50,7 +50,7 @@ pub fn count_window(
             }
             // start window
             println!("------------------------------------------");
-            println!("Start Window [{}]", chrono::Utc::now());
+            println!("Start Window buffer = {}]", stock_data_buffer.len());
             println!("------------------------------------------");
         }
     }
