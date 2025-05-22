@@ -1,31 +1,23 @@
-use super::args::ArgsSet;
 use crate::{
     error::window::WindowError,
-    model::{stock_data::StockEnum, window_data::WindowData},
-    utils::args::SlidingWindowEnumType,
+    model::{
+        args::{ArgsSet, SlidingWindowEnumType},
+        window_data::WindowData,
+    },
 };
 use statrs::statistics::Statistics;
-use std::collections::{HashMap, VecDeque};
+use std::collections::VecDeque;
 
-pub fn show_stat(
+pub fn show_stat_result(
     stock_data_buffer: VecDeque<WindowData>,
     args_set: ArgsSet,
+    stocks: Vec<(String, Vec<f64>)>,
 ) -> Result<(), WindowError> {
+    //* print result *//
     for stock_data in stock_data_buffer.clone() {
         println!("{:?}", stock_data);
     }
     println!("-Total Results----------------------");
-    let mut hash_map: HashMap<StockEnum, Vec<f64>> = HashMap::new();
-    for v in stock_data_buffer.iter() {
-        let stock_kind: StockEnum = v.stock_data.stock.clone();
-        let value: &mut Vec<f64> = hash_map.entry(stock_kind).or_default();
-        value.push(v.stock_data.close);
-    }
-    let mut stocks: Vec<(String, Vec<f64>)> = hash_map
-        .into_iter()
-        .map(|(key, value)| (key.to_string(), value))
-        .collect::<Vec<(String, Vec<f64>)>>();
-    stocks.sort_by(|(key_a, _), (key_b, _)| key_a.cmp(key_b));
     stocks.into_iter().for_each(|(key, value)| {
         println!(
             "{} Max: {}, Min: {}, Mean: {}, Std: {}",
@@ -37,7 +29,7 @@ pub fn show_stat(
         )
     });
     println!("--------------------------------------");
-    // end window
+    // show border window data info
     match args_set.types {
         SlidingWindowEnumType::Count => {
             let start_window_id = stock_data_buffer

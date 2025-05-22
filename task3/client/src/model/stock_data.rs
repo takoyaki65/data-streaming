@@ -1,4 +1,4 @@
-use crate::utils::error::ClientError;
+use crate::error::window::WindowError;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum StockEnum {
@@ -64,8 +64,8 @@ impl std::fmt::Display for StockEnum {
 }
 
 impl std::str::FromStr for StockEnum {
-    type Err = ClientError;
-    fn from_str(s: &str) -> Result<Self, ClientError> {
+    type Err = WindowError;
+    fn from_str(s: &str) -> Result<Self, WindowError> {
         match s {
             "StockA" => Ok(StockEnum::StockA),
             "StockB" => Ok(StockEnum::StockB),
@@ -93,7 +93,7 @@ impl std::str::FromStr for StockEnum {
             "StockX" => Ok(StockEnum::StockX),
             "StockY" => Ok(StockEnum::StockY),
             "StockZ" => Ok(StockEnum::StockZ),
-            other => Err(ClientError::StockEnumParseError(other.to_string())),
+            other => Err(WindowError::StockEnumParseError(other.to_string())),
         }
     }
 }
@@ -108,7 +108,7 @@ pub struct StockData {
     pub timestamp: chrono::NaiveDateTime,
 }
 
-pub fn create_stock_data(record: Vec<String>) -> Result<StockData, ClientError> {
+pub fn create_stock_data(record: Vec<String>) -> Result<StockData, WindowError> {
     // create StockData object
     let stock = record[0].parse::<StockEnum>()?;
     let open = record[1].parse::<f64>()?;

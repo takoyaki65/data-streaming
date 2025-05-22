@@ -1,38 +1,32 @@
-use error::window::WindowError;
-use model::stock_data::create_stock_data;
-use model::window_data::WindowData;
 use std::collections::VecDeque;
-use std::env;
 use std::io::Read;
 use std::net::{IpAddr, Ipv4Addr, SocketAddr, TcpStream};
-use window::{count_window, time_window};
 
-pub mod error;
-pub mod model;
-pub mod utils;
-pub mod window;
+use axum::extract::ws::WebSocket;
+
+use crate::error::window::WindowError;
+use crate::model::args::{self, ArgsSet};
+use crate::model::stock_data::create_stock_data;
+use crate::model::window_data::WindowData;
+use crate::window::{count_window, time_window};
 
 // protocol
 // 1. create socket
 // 2. connect to server
 // 4. receive message from server until recieved "Over"
 
-// port
+// Domain
 const PORT: u16 = 5000;
 
-fn main() -> Result<(), WindowError> {
-    // 0. get command line args
-    // format: cargo run -- --(count|window) -- --window 5 -- --slide 2
-    // [terms about count]
-    // 1. window and slide are both (n > 0) ∧ (n ∈ N).
-    // [terms about time]
-    // 1. window and slide are both (accuracy: milliseconds) ∧ (n ∈ R).
-    // 2. window > slide
-    let args_set = utils::args::parse_args(env::args().collect())?;
+pub async fn socket(args_set: ArgsSet, socket: &mut WebSocket) -> Result<(), WindowError> {
     println!("Args: {:?}", args_set);
     // 1.create socket
     let server_address = SocketAddr::new(IpAddr::V4(Ipv4Addr::LOCALHOST), PORT);
-    println!("Server listening on: sw://localhost:{}", PORT);
+    println!(
+        "Server listening on: sw://{}:{}",
+        IpAddr::V4(Ipv4Addr::LOCALHOST),
+        PORT
+    );
 
     // 2. connect to server
     let mut stream = match TcpStream::connect(server_address) {
@@ -69,19 +63,29 @@ fn main() -> Result<(), WindowError> {
                 id += 1;
                 // ** sliding window process ** //
                 match args_set.types {
-                    utils::args::SlidingWindowEnumType::Count => count_window::count_window(
-                        &mut is_first_flag,
-                        &mut stock_data_buffer,
-                        &args_set,
-                        window_data,
-                    )?,
-                    utils::args::SlidingWindowEnumType::Time => time_window::time_window(
-                        &mut is_first_flag,
-                        &mut stock_data_buffer,
-                        &args_set,
-                        window_data,
-                    )?,
-                }
+                    // time based window
+                    args::SlidingWindowEnumType::Count => {
+                        count_window::count_window(
+                            &mut is_first_flag,
+                            &mut stock_data_buffer,
+                            &args_set,
+                            window_data,
+                            socket,
+                        )
+                        .await?
+                    }
+                    // count based window
+                    args::SlidingWindowEnumType::Time => {
+                        time_window::time_window(
+                            &mut is_first_flag,
+                            &mut stock_data_buffer,
+                            &args_set,
+                            window_data,
+                            socket,
+                        )
+                        .await?
+                    }
+                };
             }
             Err(e) => {
                 eprintln!("Error receiving message from server: {}", e);

@@ -1,18 +1,20 @@
-use super::{
-    args::ArgsSet,
-    error::ClientError,
-    stat::{self},
-    window_data::WindowData,
+use axum::extract::ws::WebSocket;
+
+use crate::{
+    error::window::WindowError,
+    model::{args::ArgsSet, window_data::WindowData},
+    stat::create_stat,
 };
 use std::collections::VecDeque;
 
-pub fn time_window(
+pub async fn time_window(
     is_first_flag: &mut bool,
     stock_data_buffer: &mut VecDeque<WindowData>,
     args_set: &ArgsSet,
     window_data: WindowData,
-) -> Result<(), ClientError> {
-    // check if the time is over
+    socket: &mut WebSocket,
+) -> Result<(), WindowError> {
+    // sliding window process (time based)
     if *is_first_flag {
         // first window process
         if stock_data_buffer.is_empty() {
@@ -23,7 +25,7 @@ pub fn time_window(
                 Some(first_element) => first_element.clone(),
                 None => {
                     eprintln!("Error: first element is not found.");
-                    return Err(ClientError::PushFailedError);
+                    return Err(WindowError::PushFailedError);
                 }
             };
             // get time difference
@@ -37,7 +39,8 @@ pub fn time_window(
             }
             if !*is_first_flag {
                 // show result
-                stat::show_stat(stock_data_buffer.clone(), args_set.clone())?;
+                create_stat::create_stat_data(stock_data_buffer.clone(), args_set.clone(), socket)
+                    .await?;
                 // pop over record
                 let pop_slide_time = first_element.get_timestamp()
                     + chrono::Duration::milliseconds(args_set.get_slide_time_value()?);
@@ -61,14 +64,14 @@ pub fn time_window(
             Some(first_element) => first_element.clone(),
             None => {
                 eprintln!("Error: first element is not found.");
-                return Err(ClientError::PushFailedError);
+                return Err(WindowError::PushFailedError);
             }
         };
         let last_element = match stock_data_buffer.back() {
             Some(last_element) => last_element.clone(),
             None => {
                 eprintln!("Error: last element is not found.");
-                return Err(ClientError::PushFailedError);
+                return Err(WindowError::PushFailedError);
             }
         };
         if last_element.get_timestamp() - first_element.get_timestamp()
@@ -78,7 +81,8 @@ pub fn time_window(
             stock_data_buffer.push_back(window_data);
         } else {
             // show result
-            stat::show_stat(stock_data_buffer.clone(), args_set.clone())?;
+            create_stat::create_stat_data(stock_data_buffer.clone(), args_set.clone(), socket)
+                .await?;
             // pop over record
             let pop_slide_time = first_element.get_timestamp()
                 + chrono::Duration::milliseconds(args_set.get_slide_time_value()?);

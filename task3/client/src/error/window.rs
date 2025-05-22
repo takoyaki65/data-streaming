@@ -1,5 +1,5 @@
 #[derive(Debug, thiserror::Error)]
-pub enum ClientError {
+pub enum WindowError {
     #[error(transparent)]
     IoError(#[from] std::io::Error),
     #[error(transparent)]

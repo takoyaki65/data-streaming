@@ -1,8 +1,7 @@
-use super::{
-    args::ArgsSet,
-    error::ClientError,
-    stat::{self},
-    window_data::WindowData,
+use crate::{
+    error::window::WindowError,
+    model::window_data::WindowData,
+    utils::{args::ArgsSet, stat},
 };
 use std::collections::VecDeque;
 
@@ -11,7 +10,7 @@ pub fn count_window(
     stock_data_buffer: &mut VecDeque<WindowData>,
     args_set: &ArgsSet,
     window_data: WindowData,
-) -> Result<(), ClientError> {
+) -> Result<(), WindowError> {
     if *is_first_flag {
         // first window process
         if stock_data_buffer.len() < args_set.get_window_count_value()? as usize {

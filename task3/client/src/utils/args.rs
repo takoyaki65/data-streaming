@@ -1,4 +1,4 @@
-use super::error::ClientError;
+use crate::error::window::WindowError;
 
 #[derive(Debug, Clone)]
 pub enum SlidingWindowEnumType {
@@ -7,12 +7,12 @@ pub enum SlidingWindowEnumType {
 }
 
 impl std::str::FromStr for SlidingWindowEnumType {
-    type Err = ClientError;
-    fn from_str(s: &str) -> Result<Self, ClientError> {
+    type Err = WindowError;
+    fn from_str(s: &str) -> Result<Self, WindowError> {
         match s {
             "--count" => Ok(SlidingWindowEnumType::Count),
             "--time" => Ok(SlidingWindowEnumType::Time),
-            _ => Err(ClientError::ParseArgsError(s.to_string())),
+            _ => Err(WindowError::ParseArgsError(s.to_string())),
         }
     }
 }
@@ -50,30 +50,30 @@ impl Default for ArgsSet {
 }
 
 impl ArgsSet {
-    pub fn get_window_count_value(&self) -> Result<u64, ClientError> {
+    pub fn get_window_count_value(&self) -> Result<u64, WindowError> {
         match self.window {
             WindowType::Count(count) => Ok(count),
-            WindowType::Time(_) => Err(ClientError::GetWindowTypeCountValueError),
+            WindowType::Time(_) => Err(WindowError::GetWindowTypeCountValueError),
         }
     }
-    pub fn get_window_time_value(&self) -> Result<i64, ClientError> {
+    pub fn get_window_time_value(&self) -> Result<i64, WindowError> {
         match self.window {
-            WindowType::Count(_) => Err(ClientError::GetWindowTypeTimeValueError),
+            WindowType::Count(_) => Err(WindowError::GetWindowTypeTimeValueError),
             WindowType::Time(time) => {
                 let result = (time * 1000.0).round() as i64;
                 Ok(result)
             }
         }
     }
-    pub fn get_slide_count_value(&self) -> Result<u64, ClientError> {
+    pub fn get_slide_count_value(&self) -> Result<u64, WindowError> {
         match self.count {
             CountType::Count(count) => Ok(count),
-            CountType::Time(_) => Err(ClientError::GetSlideTypeCountValueError),
+            CountType::Time(_) => Err(WindowError::GetSlideTypeCountValueError),
         }
     }
-    pub fn get_slide_time_value(&self) -> Result<i64, ClientError> {
+    pub fn get_slide_time_value(&self) -> Result<i64, WindowError> {
         match self.count {
-            CountType::Count(_) => Err(ClientError::GetSlideTypeTimeValueError),
+            CountType::Count(_) => Err(WindowError::GetSlideTypeTimeValueError),
             CountType::Time(time) => {
                 let result = (time * 1000.0).round() as i64;
                 Ok(result)
@@ -82,7 +82,7 @@ impl ArgsSet {
     }
 }
 
-pub fn parse_args(args: Vec<String>) -> Result<ArgsSet, ClientError> {
+pub fn parse_args(args: Vec<String>) -> Result<ArgsSet, WindowError> {
     let mut args_set = ArgsSet::default();
     for i in 0..args.len() {
         if i == 1 && (args[1] == "--count" || args[1] == "--time") {
@@ -106,7 +106,7 @@ pub fn parse_args(args: Vec<String>) -> Result<ArgsSet, ClientError> {
         } else if i == 0 || i == 3 || i == 5 {
             continue;
         } else {
-            return Err(ClientError::ParseArgsError(
+            return Err(WindowError::ParseArgsError(
                 "Invalid argument pattern. Use cargo run -- --(count|time) --window (window size as number (window > slide)) --slide (slide size as number (window > slide)).".to_string(),
             ));
         }
