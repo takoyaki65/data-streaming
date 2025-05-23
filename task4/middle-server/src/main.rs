@@ -1,6 +1,6 @@
 use axum::{Router, extract::DefaultBodyLimit, routing::get};
 use error::ws::WebSocketError;
-use handlers::{count_window::count_handler, time_window::time_handler};
+use handlers::websocket::websocket_handler;
 use std::sync::Arc;
 use tokio::sync::RwLock;
 use tower_http::cors::CorsLayer;
@@ -31,8 +31,7 @@ async fn main() -> Result<(), WebSocketError> {
 
     // router
     let app: Router<()> = Router::new()
-        .route("/time", get(time_handler))
-        .route("/count", get(count_handler))
+        .route("/", get(websocket_handler))
         .layer(cors)
         .layer(DefaultBodyLimit::max(1024 * 1024 * 100)) //100MB
         .with_state(Arc::clone(&shared_state));

@@ -35,6 +35,8 @@ pub enum WindowError {
     AxumError(#[from] axum::Error),
     #[error(transparent)]
     SerdeJsonError(#[from] serde_json::Error),
+    #[error("{0} is a invalid value.")]
+    InvalidSlidingWindowType(String),
 }
 
 impl From<WindowError> for AppError {
@@ -103,6 +105,10 @@ impl From<WindowError> for AppError {
             WindowError::SerdeJsonError(e) => AppError {
                 status_code: StatusCode::INTERNAL_SERVER_ERROR,
                 message: format!("SerdeJsonError: {}", e),
+            },
+            WindowError::InvalidSlidingWindowType(e) => AppError {
+                status_code: StatusCode::BAD_REQUEST,
+                message: format!("InvalidSlidingWindowType: {} is a invalid value.", e),
             },
         }
     }

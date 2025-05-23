@@ -3,14 +3,10 @@ use axum::extract::ws::{Message, WebSocket};
 use crate::{
     error::{app::AppError, ws::WebSocketError},
     middleware::socket,
-    model::args::SlidingWindowEnumType,
     utils::args,
 };
 
-pub async fn web_socket_handler(
-    mut socket: WebSocket,
-    sliding_types: SlidingWindowEnumType,
-) -> Result<(), AppError> {
+pub async fn websocket_processing(mut socket: WebSocket) -> Result<(), AppError> {
     while let Some(message) = socket.recv().await {
         // Receive a message from the client
         match message {
@@ -18,7 +14,7 @@ pub async fn web_socket_handler(
                 match message {
                     Message::Text(text) => {
                         // create args_set
-                        let args_set = args::create_args_set(text, sliding_types.clone())?;
+                        let args_set = args::create_args_set(text)?;
                         //* send stat result to client *//
                         socket::socket(args_set, &mut socket).await?;
                     }
