@@ -1,14 +1,16 @@
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ErrorMessage } from "@hookform/error-message";
-import type { FC } from "react";
+import { type Dispatch, type FC, type SetStateAction } from "react";
 import {
   slidingWindowSchema,
   type SlidingWindowSchemaType,
 } from "../../validations/slidingWindow";
+import type { SlidingWindowDataType } from "../../model/slidingWindowData";
 
 type Props = {
-  types: "Count" | "Time";
+  types: "count" | "time";
+  setResult: Dispatch<SetStateAction<SlidingWindowDataType | null>>;
 };
 
 const SlidingWindowForm: FC<Props> = (props) => {
@@ -25,6 +27,18 @@ const SlidingWindowForm: FC<Props> = (props) => {
   // send to middle-server
   const onSubmit: SubmitHandler<SlidingWindowSchemaType> = async (formData) => {
     console.table(formData);
+    // create object
+    const socket = new WebSocket("ws://localhost:7000");
+    // connect server
+    socket.addEventListener("open", (_) => {
+      socket.send(`${props.types},${formData.window},${formData.slide}`);
+    });
+    // listen for message
+    socket.addEventListener("message", (event) => {
+      const data: SlidingWindowDataType = JSON.parse(event.data);
+      console.table(data);
+      props.setResult(data);
+    });
   };
 
   return (

@@ -7,8 +7,8 @@ const App: FC = () => {
     <>
       <Routes>
         <Route path="/" element={<HomePage />} />
-        <Route path="/time" element={<CountPage />} />
-        <Route path="/count" element={<TimePage />} />
+        <Route path="/count" element={<CountPage />} />
+        <Route path="/time" element={<TimePage />} />
       </Routes>
     </>
   );
