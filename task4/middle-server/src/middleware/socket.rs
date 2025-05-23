@@ -1,14 +1,14 @@
-use std::collections::VecDeque;
-use std::io::Read;
-use std::net::{IpAddr, Ipv4Addr, SocketAddr, TcpStream};
-
-use axum::extract::ws::WebSocket;
-
 use crate::error::window::WindowError;
 use crate::model::args::{self, ArgsSet};
 use crate::model::stock_data::create_stock_data;
 use crate::model::window_data::WindowData;
 use crate::window::{count_window, time_window};
+use axum::extract::ws::WebSocket;
+use std::{
+    collections::VecDeque,
+    net::{IpAddr, Ipv4Addr, SocketAddr},
+};
+use tokio::{io::AsyncReadExt, net::TcpStream};
 
 // protocol
 // 1. create socket
@@ -22,14 +22,9 @@ pub async fn socket(args_set: ArgsSet, socket: &mut WebSocket) -> Result<(), Win
     println!("Args: {:?}", args_set);
     // 1.create socket
     let server_address = SocketAddr::new(IpAddr::V4(Ipv4Addr::LOCALHOST), PORT);
-    println!(
-        "Server listening on: sw://{}:{}",
-        IpAddr::V4(Ipv4Addr::LOCALHOST),
-        PORT
-    );
 
     // 2. connect to server
-    let mut stream = match TcpStream::connect(server_address) {
+    let mut stream = match TcpStream::connect(server_address).await {
         Ok(stream) => stream,
         Err(e) => {
             eprintln!("Error connecting to server: {}", e);
@@ -47,7 +42,7 @@ pub async fn socket(args_set: ArgsSet, socket: &mut WebSocket) -> Result<(), Win
     // 3. receive message from server
     loop {
         let mut buffer = [0u8; 1024];
-        match stream.read(&mut buffer) {
+        match stream.read(&mut buffer).await {
             Ok(bytes_read) => {
                 // get buffer
                 let record: Vec<String> = String::from_utf8_lossy(&buffer[..bytes_read])

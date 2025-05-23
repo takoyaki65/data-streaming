@@ -1,8 +1,4 @@
-use crate::{
-    error::app::AppError,
-    model::shared_state::RwLockSharedState,
-    utils::websocket::{self},
-};
+use crate::{error::app::AppError, model::shared_state::RwLockSharedState, utils::websocket};
 use axum::{
     extract::{State, WebSocketUpgrade},
     response::IntoResponse,

@@ -15,6 +15,7 @@ pub async fn websocket_processing(mut socket: WebSocket) -> Result<(), AppError>
                     Message::Text(text) => {
                         // create args_set
                         let args_set = args::create_args_set(text)?;
+                        println!("Args: {:?}", args_set);
                         //* send stat result to client *//
                         socket::socket(args_set, &mut socket).await?;
                     }
