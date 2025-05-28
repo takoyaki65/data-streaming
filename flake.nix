@@ -32,6 +32,7 @@
               corepack
               # Java
               temurin-bin
+              maven
               # rust
               openssl
               pkg-config
