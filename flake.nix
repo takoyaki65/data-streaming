@@ -31,7 +31,7 @@
               nodejs
               corepack
               # Java
-              temurin-bin
+              jdk
               maven
               # rust
               openssl
