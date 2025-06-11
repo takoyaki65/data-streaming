@@ -30,9 +30,9 @@
               # JavaScript
               nodejs
               corepack
-              # Java
-              jdk
-              maven
+              # Scala
+              jdk21_headless
+              sbt
               # rust
               openssl
               pkg-config

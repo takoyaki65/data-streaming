@@ -1,1 +1,5 @@
+# Rust
+/target
+
+# Raw Data
 stock_data.txt

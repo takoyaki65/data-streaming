@@ -1,8 +1,2 @@
 # Nix
 /.direnv
-
-# rust
-target
-
-# flink
-flink-*
