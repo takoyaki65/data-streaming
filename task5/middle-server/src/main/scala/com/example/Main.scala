@@ -1,5 +1,6 @@
 package com.example
 
+// apache flink
 import org.apache.flinkx.api.*
 import org.apache.flinkx.api.serializers.*
 import org.apache.flink.streaming.api.functions.sink.PrintSinkFunction
@@ -13,7 +14,7 @@ case class Stock(
     timestamp: String
 )
 
-object App {
+object Main {
   def main(args: Array[String]): Unit = {
     // flink stream exec environment
     val env = StreamExecutionEnvironment.getExecutionEnvironment
