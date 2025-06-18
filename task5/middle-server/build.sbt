@@ -10,7 +10,8 @@ lazy val root = (project in file(".")).settings(
     "org.flinkextended" %% "flink-scala-api-1" % "1.2.7",
     "org.apache.flink" % "flink-clients" % "1.20.1" % Provided,
     "org.apache.logging.log4j" % "log4j-slf4j2-impl" % "2.24.3",
-    "org.playframework" %% "play" % "3.0.7"
+    "org.playframework" %% "play" % "3.0.7",
+    "org.scala-lang" %% "toolkit" % "0.7.0"
   )
 )
 

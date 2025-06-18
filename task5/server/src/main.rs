@@ -51,15 +51,17 @@ fn main() -> Result<(), ServerError> {
                         .skip(1)
                     {
                         match result {
-                            Ok(record) => match socket.write_all(record.as_bytes()) {
-                                Ok(_) => {
-                                    println!("Sent message to client: {}", record);
+                            Ok(record) => {
+                                match socket.write_all((record.clone() + "\n").as_bytes()) {
+                                    Ok(_) => {
+                                        println!("Sent message to client: {}", record);
+                                    }
+                                    Err(e) => {
+                                        eprintln!("Error writing to socket: {}", e);
+                                        return Err(ServerError::IoError(e));
+                                    }
                                 }
-                                Err(e) => {
-                                    eprintln!("Error writing to socket: {}", e);
-                                    return Err(ServerError::IoError(e));
-                                }
-                            },
+                            }
                             Err(e) => {
                                 eprintln!("Error reading record: {}", e);
                                 return Err(ServerError::IoError(e));
@@ -69,7 +71,7 @@ fn main() -> Result<(), ServerError> {
                         thread::sleep(time::Duration::from_millis(48));
                     }
                     // send Over
-                    match socket.write_all("Over".as_bytes()) {
+                    match socket.write_all("Over\n".as_bytes()) {
                         Ok(_) => {
                             println!("Sent message to client: Over");
                         }
