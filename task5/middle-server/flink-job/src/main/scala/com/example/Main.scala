@@ -125,38 +125,21 @@ object Main {
         WindowData(stock_data, processing_timestamp_str, 0)
       }
 
-    if (args(0) == "time") {
-      val downStream = windowDataStream
-        .windowAll(
-          SlidingProcessingTimeWindows
-            .of(Duration.ofSeconds(5), Duration.ofSeconds(2))
-        )
-        .process(new TimeBasedAggregator)
-      downStream.print()
+    val timeBasedDownStream = windowDataStream
+      .windowAll(
+        SlidingProcessingTimeWindows
+          .of(Duration.ofSeconds(5), Duration.ofSeconds(2))
+      )
+      .process(new TimeBasedAggregator)
 
-      val iterator = downStream.executeAndCollect()
-      while (iterator.hasNext) {
-        val json_str = iterator.next()
-        println(json_str)
-        // websocketServer.broadcast(json_str)
-      }
-    } else if (args(0) == "count") {
-      val downStream = windowDataStream
-        .countWindowAll(100, 20)
-        .process(new CountBasedAggregator)
-      downStream.print()
+    val countBasedDownStream = windowDataStream
+      .countWindowAll(100, 20)
+      .process(new CountBasedAggregator)
 
-      val iterator = downStream.executeAndCollect()
-      while (iterator.hasNext) {
-        val json_str = iterator.next()
-        println(json_str)
-        // websocketServer.broadcast(json_str)
-      }
-    } else {
-      println("Invalid argument")
-      sys.exit(1)
-    }
+    // TODO: send the data of timeBasedDownStream to ws://localhost:7000/time-submit
 
-    // env.execute("Start Socket Stream")
+    // TODO: send the data of countBasedDownStream to ws://localhost:7000/count-submit
+
+    env.execute("Flink WebSocket Job")
   }
 }
